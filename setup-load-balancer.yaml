@@ -1,0 +1,12 @@
+- name: Setup Load Balancer
+  hosts: loadbalancer
+  become: yes
+  vars:
+    server_name: landingpage.domainsaya.id
+    server:
+      - name: server 1
+        host: 34.101.142.236
+      - name: server 2
+        host: 34.128.103.183
+  roles:
+    - loadbalancer

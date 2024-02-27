@@ -1,0 +1,28 @@
+- name: install depedency
+  apt:
+    name: "{{ item }}"
+    update_cache: yes # apt update
+    state: present
+  loop:
+    - nginx
+
+- name: delete nginx configuration
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/nginx/sites-available/default
+    - /etc/nginx/sites-enabled/default
+
+- name: copy nginx config
+  template:
+    src: templates/default.j2
+    dest: /etc/nginx/sites-available/default
+
+- name: create symlink nginx config
+  file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+  notify: 
+    - restart nginx

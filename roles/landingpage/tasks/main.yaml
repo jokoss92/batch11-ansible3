@@ -1,0 +1,55 @@
+- name: install depedency
+  apt:
+    name: "{{ item }}"
+    update_cache: yes # apt update
+    state: present
+  loop:
+    - nginx
+    - php-fpm
+    - php-mysql
+    - php-gd
+    - php-zip
+
+- name: Create a directory
+  ansible.builtin.file:
+    path: /var/www/landingpage.domainsaya.id/html
+    owner: www-data
+    group: www-data
+    state: directory
+
+- name: delete nginx configuration
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/nginx/sites-available/default
+    - /etc/nginx/sites-enabled/default
+
+- name: copy nginx config
+  copy:
+    src: files/default
+    dest: /etc/nginx/sites-available/default
+
+- name: create symlink nginx config
+  file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+  notify: 
+    - restart nginx
+
+
+- name: git safe directory
+  shell: git config --global --add safe.directory /var/www/landingpage.domainsaya.id/html
+
+- name: download project
+  ansible.builtin.git:
+    repo: https://github.com/adhithia21/sample-php.git
+    dest: /var/www/landingpage.domainsaya.id/html
+    force: yes
+
+- name: copy database config
+  template:
+    src: templates/database.php.j2
+    dest: /var/www/landingpage.domainsaya.id/html/application/config/database.php
+    backup: yes
